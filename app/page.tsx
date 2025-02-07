@@ -5,101 +5,17 @@ import { Spotlight } from "@/components/ui/spotlight-new";
 import { PaperPlaneTilt, Robot } from "@phosphor-icons/react";
 import { marked } from "marked";
 import ThreeDotsLoading from "@/components/icon/three-dots-loading";
+import { ToolCall } from "@/components/ui/chat/tool-call";
+import { AskForConfirmation } from "@/components/ui/chat/ask-for-conifrmation";
 
 export default function Home() {
-  const { messages, input, isLoading, handleInputChange, handleSubmit } = useChat({
-    // initialMessages: [
-    //   {
-    //     id: "1",
-    //     role: "user",
-    //     content: "HI",
-    //   },
-    //   {
-    //     id: "2",
-    //     role: "assistant",
-    //     content: "Hello",
-    //   },
-    //   {
-    //     id: "3",
-    //     role: "user",
-    //     content: "Who is you",
-    //   },
-    //   {
-    //     id: "4",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    //   {
-    //     id: "5",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    //   {
-    //     id: "6",
-    //     role: "user",
-    //     content: "Who is you",
-    //   },
-    //   {
-    //     id: "7",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    //   {
-    //     id: "8",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    //   {
-    //     id: "9",
-    //     role: "assistant",
-    //     content: "Hello",
-    //   },
-    //   {
-    //     id: "10",
-    //     role: "user",
-    //     content: "Who is you",
-    //   },
-    //   {
-    //     id: "11",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    //   {
-    //     id: "12",
-    //     role: "assistant",
-    //     content: "Hello",
-    //   },
-    //   {
-    //     id: "13",
-    //     role: "user",
-    //     content: "Who is you",
-    //   },
-    //   {
-    //     id: "14",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    //   {
-    //     id: "15",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    //   {
-    //     id: "16",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    //   {
-    //     id: "17",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    //   {
-    //     id: "18",
-    //     role: "assistant",
-    //     content: "I am Pollay, your AI-powered trading ally. How can I assist you today?",
-    //   },
-    // ],
+  const { messages, input, isLoading, handleInputChange, handleSubmit, addToolResult } = useChat({
+    async onToolCall({ toolCall }) {
+      if (toolCall.toolName === "getLocation") {
+        const cities = ["New York", "Los Angeles", "Chicago", "San Francisco"];
+        return cities[Math.floor(Math.random() * cities.length)];
+      }
+    },
   });
 
   return (
@@ -126,25 +42,71 @@ export default function Home() {
           <div className="w-full h-full overflow-y-auto pb-20 pt-20">
             <div className="max-w-2xl mx-auto w-full px-4" id="chat-container">
               {messages.map((m, index) => (
-                <div key={m.id} className="flex items-end gap-2 mb-2">
-                  {m.role === 'assistant' && (
-                    <div className="size-8 rounded-full bg-white/10 shrink-0 flex items-center justify-center text-white/70">
-                      {isLoading && index === messages.length - 1 ? (
-                        <ThreeDotsLoading className="size-6" />
-                      ) : (
-                        <Robot size={16} />
-                      )}
-                    </div>
-                  )}
-                  <div className={`flex-1 flex ${m.role === "user" ? "justify-end" : "justify-start"}`} >
-                    <div
-                      className={`inline-block max-w-[80%] rounded-t-2xl border border-gray-700 p-3 text-sm shadow-sm prose prose-invert ${
-                        m.role === "user" ? "rounded-bl-2xl bg-white/90 text-gray-950" : "rounded-br-2xl bg-gradient-to-tr from-gray-900 to-gray-800 text-white"
-                      }`}
-                      // @ts-expect-error: marked.parse returns HTML string
-                      dangerouslySetInnerHTML={{ __html: marked.parse(m.content) }}
-                    ></div>
-                  </div>
+                <div key={m.id}>
+                  {m.parts.map((part) => {
+                    switch (part.type) {
+                      case "text":
+                        return (
+                          <div className="flex items-end gap-2 mb-2" key={m.id + " " + part.type}>
+                            {m.role === "assistant" && (
+                              <div className="size-8 rounded-full bg-white/10 shrink-0 flex items-center justify-center text-white/70">
+                                {isLoading && index === messages.length - 1 ? <ThreeDotsLoading className="size-6" /> : <Robot size={16} />}
+                              </div>
+                            )}
+                            <div className={`flex-1 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                              <div
+                                className={`inline-block max-w-[80%] rounded-t-2xl border border-gray-700 p-3 text-sm shadow-sm prose prose-invert ${
+                                  m.role === "user"
+                                    ? "rounded-bl-2xl bg-white/90 text-gray-950"
+                                    : "rounded-br-2xl bg-gradient-to-tr from-gray-900 to-gray-800 text-white"
+                                }`}
+                                // @ts-expect-error: marked.parse returns HTML string
+                                dangerouslySetInnerHTML={{ __html: marked.parse(m.content) }}
+                              ></div>
+                            </div>
+                          </div>
+                        );
+                      case "tool-invocation": {
+                        const callId = part.toolInvocation.toolCallId;
+                        switch (part.toolInvocation.toolName) {
+                          case "events": {
+                            switch (part.toolInvocation.state) {
+                              case "call":
+                                return <ToolCall state="loading" text="Getting events from Polymarket..." />;
+                              case "result":
+                                return <ToolCall state="result" text={`${part.toolInvocation.result.length} events found in Polymarket`} />;
+                            }
+                            break;
+                          }
+                          case "askForConfirmation": {
+                            switch (part.toolInvocation.state) {
+                              case "call":
+                                return (
+                                  <AskForConfirmation
+                                    text={part.toolInvocation.args.message}
+                                    onClickYes={() =>
+                                      addToolResult({
+                                        toolCallId: callId,
+                                        result: "Yes, confirmed.",
+                                      })
+                                    }
+                                    onClickNo={() =>
+                                      addToolResult({
+                                        toolCallId: callId,
+                                        result: "No, canceled.",
+                                      })
+                                    }
+                                  />
+                                );
+                              case "result":
+                                return <ToolCall state="result" text={part.toolInvocation.result} />;
+                            }
+                            break;
+                          }
+                        }
+                      }
+                    }
+                  })}
                 </div>
               ))}
             </div>
