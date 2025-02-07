@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { events } from "@/lib/tools/events";
+import { tags } from "@/lib/tools/tags";
 import { openai } from "@ai-sdk/openai";
 import { convertToCoreMessages, InvalidToolArgumentsError, NoSuchToolError, smoothStream, streamText, ToolExecutionError } from "ai";
 import { unstable_noStore as noStore } from "next/cache";
@@ -26,6 +27,7 @@ export async function POST(req: Request) {
     maxSteps: 5,
     toolCallStreaming: true,
     tools: {
+      tags,
       events,
       // client-side tool that starts user interaction:
       askForConfirmation: {
