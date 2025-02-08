@@ -7,14 +7,14 @@ const Event = z.object({
   description: z.string(),
 });
 
-type Event = z.infer<typeof Event>;
+export type Event = z.infer<typeof Event>;
 
 export const events = tool({
   description:
     "Get list of top events. Events typically refers to a specific topic or question that users can place bets on. Events are the broader categories or questions that drive the creation of markets.",
   parameters: z.object({
-    limit: z.number().default(20).describe("Limit query results"),
-    tag_id: z.string().nullable().describe("Filter by tag ID"),
+    limit: z.number().max(20).default(10).describe("Limit query results"),
+    tag_id: z.number().optional().describe("Filter by tag ID"),
     active: z.boolean().default(true).describe("Filter by active status"),
     closed: z.boolean().default(false).describe("Filter by closed status"),
     archived: z.boolean().default(false).describe("Filter by archived status"),
