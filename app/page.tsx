@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { generateId } from "ai";
 import ThreeDotsLoading from "@/components/icon/three-dots-loading";
 import { Event } from "@/lib/tools/events";
+import { EventDetailMarket } from "@/components/ui/chat/event-detail-market";
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -86,6 +87,7 @@ export default function Home() {
                   <div key={m.id}>
                     {m.parts.map((part) => {
                       const key = m.id + "-" + part.type;
+                      const partToolInvocation = m.parts.find((part) => part.type === "tool-invocation")?.toolInvocation;
                       switch (part.type) {
                         case "text":
                           return (
@@ -97,14 +99,25 @@ export default function Home() {
                               )}
                               <div className={`flex-1 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                                 <div
-                                  className={`inline-block max-w-[80%] rounded-t-2xl border border-gray-700 p-3 text-sm shadow-sm prose prose-invert ${
+                                  className={`relative overflow-hidden inline-block max-w-[80%] rounded-t-2xl border border-gray-700 p-3 text-sm shadow-sm ${
                                     m.role === "user"
                                       ? "rounded-bl-2xl bg-white/90 text-gray-950"
                                       : "rounded-br-2xl bg-gradient-to-tr from-gray-900 to-gray-800 text-white"
                                   }`}
-                                  // @ts-expect-error: marked.parse returns HTML string
-                                  dangerouslySetInnerHTML={{ __html: marked.parse(m.content) }}
-                                ></div>
+                                >
+                                  <div
+                                    // @ts-expect-error: marked.parse returns HTML string
+                                    dangerouslySetInnerHTML={{ __html: marked.parse(m.content) }}
+                                    className={`${m.role === "assistant" ? "prose prose-invert" : ""}`}
+                                  ></div>
+
+                                  {partToolInvocation && partToolInvocation.state === "result" && partToolInvocation.toolName === "eventDetail" && (
+                                    <EventDetailMarket
+                                      markets={partToolInvocation.result.markets}
+                                      onOutcomeClicked={(msg) => addMessage("user", msg)}
+                                    />
+                                  )}
+                                </div>
                               </div>
                             </div>
                           );
@@ -117,6 +130,15 @@ export default function Home() {
                                   return <ToolCall key={key} state="loading" text="Getting events from Polymarket..." />;
                                 case "result":
                                   return <ToolCall key={key} state="result" text={`${part.toolInvocation.result.length} events found in Polymarket`} />;
+                              }
+                              break;
+                            }
+                            case "eventDetail": {
+                              switch (part.toolInvocation.state) {
+                                case "call":
+                                  return <ToolCall key={key} state="loading" text="Getting event details from Polymarket..." />;
+                                case "result":
+                                  return <ToolCall key={key} state="result" text="Successfully fetched event details." />;
                               }
                               break;
                             }

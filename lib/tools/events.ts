@@ -4,7 +4,6 @@ import { z } from "zod";
 const Event = z.object({
   id: z.string(),
   title: z.string(),
-  description: z.string(),
 });
 
 export type Event = z.infer<typeof Event>;
@@ -28,7 +27,6 @@ export const events = tool({
     return events.data.map((o: Event) => ({
       id: o.id,
       title: o.title,
-      description: o.description,
     }));
   },
 });

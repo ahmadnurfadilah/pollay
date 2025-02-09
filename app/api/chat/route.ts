@@ -1,3 +1,4 @@
+import { eventDetail } from "@/lib/tools/event-detail";
 import { events } from "@/lib/tools/events";
 import { tags } from "@/lib/tools/tags";
 import { openai } from "@ai-sdk/openai";
@@ -21,13 +22,18 @@ export async function POST(req: Request) {
 			- Trade Execution: Allow users to buy or sell shares in prediction markets using simple commands (e.g., "Buy 10 shares of [Outcome] on [Market]"
 			- Market Insights and Analytics: Provide real-time updates on market conditions, share prices, and trading volumes.
 			- Portfolio Management: Enable users to view and manage their portfolio, including current holdings, profitability, and diversification.
-			- Educational Resources: Offer built-in tutorials, FAQs, and tips to assist users in navigating prediction markets and optimizing their trading strategies.`,
+			- Educational Resources: Offer built-in tutorials, FAQs, and tips to assist users in navigating prediction markets and optimizing their trading strategies.
+
+      Response format:
+      - If a user asks about events, respond by simply listing event titles. Ask user to choose from available ones
+      - If a user asks about a specific event, respond by providing event details. Do not include available markets in the response`,
     experimental_transform: smoothStream(),
     maxSteps: 5,
     toolCallStreaming: true,
     tools: {
       tags,
       events,
+      eventDetail,
       // client-side tool that starts user interaction:
       askForConfirmation: {
         description: 'Ask the user for confirmation if they want to excute a trade.',
