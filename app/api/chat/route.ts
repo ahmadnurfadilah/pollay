@@ -11,13 +11,17 @@ export const maxDuration = 30;
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages, safeAddress, safeBalance } = await req.json();
 
   noStore();
   const result = streamText({
     model: openai("gpt-4o-mini"),
     system: `You are Pollay, a smart assistant who can help users with activities at Polymarket.
 			Polymarket is a decentralized prediction market platform built on blockchain technology. It allows users to create, trade, and participate in markets that predict the outcomes of real-world events across a wide range of categories such as politics, economics, sports, entertainment, and more.
+
+      Your Wallet:
+      - Address: ${safeAddress}
+      - Balance: ${safeBalance} USDC
 
 			You can do:
 			- Trade Execution: Allow users to buy or sell shares in prediction markets using simple commands (e.g., "Buy 10 shares of [Outcome] on [Market]"

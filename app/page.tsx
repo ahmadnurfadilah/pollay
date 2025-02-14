@@ -12,12 +12,40 @@ import { useEffect, useRef, useState } from "react";
 import { generateId } from "ai";
 import { Event } from "@/lib/tools/events";
 import { EventDetailMarket } from "@/components/ui/chat/event-detail-market";
+import { useAccount, useBalance, useReadContract } from "wagmi";
+import { abi } from "./abi";
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLInputElement>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [safeBalance, setSafeBalance] = useState<string>("0");
+
+  const { address } = useAccount();
+  const { data: safeAddress } = useReadContract({
+    abi,
+    address: "0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E",
+    functionName: "getSafeAddress",
+    args: [address!],
+    query: {
+      enabled: !!address,
+    },
+  });
+
+  const { data: balance } = useBalance({
+    address: safeAddress,
+    token: "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+    query: {
+      enabled: !!safeAddress,
+      retry: true,
+    },
+  });
+
   const { messages, input, isLoading, handleInputChange, handleSubmit, addToolResult, append } = useChat({
+    body: {
+      safeBalance,
+      safeAddress,
+    },
     onFinish: () => {
       setTimeout(() => {
         inputRef.current?.focus();
@@ -26,6 +54,14 @@ export default function Home() {
     },
   });
 
+  // Set safe balance
+  useEffect(() => {
+    if (balance) {
+      setSafeBalance(balance.formatted);
+    }
+  }, [balance]);
+
+  // Check messages to add suggestions
   useEffect(() => {
     const lastMessage = messages.at(-1);
     const toolInvocation = lastMessage?.parts?.find((part) => part.type === "tool-invocation")?.toolInvocation;
@@ -219,10 +255,10 @@ export default function Home() {
               <input
                 ref={inputRef}
                 type="text"
-                className="rounded-full w-full bg-gray-900 px-4 py-3 text-sm placeholder:text-white/50 peer"
-                placeholder="Write a message..."
+                className="rounded-full w-full bg-gray-900 px-4 py-3 text-sm placeholder:text-white/50 peer disabled:cursor-not-allowed disabled:text-white/30"
+                placeholder={address === undefined ? "Connect your wallet to start chatting..." : "Write a message..."}
                 value={input}
-                disabled={isLoading}
+                disabled={isLoading || address === undefined}
                 onChange={handleInputChange}
               />
               <button
