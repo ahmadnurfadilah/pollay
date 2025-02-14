@@ -32,7 +32,7 @@ export default function Home() {
   const [safeBalance, setSafeBalance] = useState<string>("0");
 
   const creds = useCredsStore((state) => state.creds);
-  const setCreds = useCredsStore((state) => state.setCreds)
+  const setCreds = useCredsStore((state) => state.setCreds);
 
   const { address } = useAccount();
   const { data: safeAddress } = useReadContract({
@@ -92,7 +92,7 @@ export default function Home() {
     if (address && creds === null) {
       checkApiKey();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, creds]);
 
   // Set safe balance
@@ -115,6 +115,16 @@ export default function Home() {
       setSuggestions([]);
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (isLoading) {
+      setInterval(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop += 20;
+        }
+      }, 100);
+    }
+  }, [isLoading]);
 
   const addMessage = (role: "system" | "user" | "assistant" | "data", message: string) => {
     append({
@@ -158,8 +168,10 @@ export default function Home() {
               transition={{ type: "spring", delay: 0.2 }}
               key="chat"
               className="w-full h-full overflow-y-auto pb-24 pt-20"
+              id="chat-container"
+              ref={chatContainerRef}
             >
-              <div className="max-w-2xl mx-auto w-full px-4" id="chat-container" ref={chatContainerRef}>
+              <div className="max-w-2xl mx-auto w-full px-4">
                 {messages.map((m, index) => (
                   <div key={m.id}>
                     {m.parts.map((part) => {

@@ -28,7 +28,7 @@ export default async function RootLayout({
   const cookies = headersObj.get("cookie");
 
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 text-gray-50`}>
         <Providers cookies={cookies}>{children}</Providers>
       </body>
