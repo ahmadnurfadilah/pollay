@@ -24,8 +24,8 @@ export const EventDetailMarket = ({ markets, onOutcomeClicked }: { markets: Mark
             {market.groupItemTitle}
 
             <div className="flex items-center gap-2 text-sm">
-              {JSON.parse(market.outcomes).map((outcome: string, index: number) => {
-                const outcomePrice = (parseFloat(JSON.parse(market.outcomePrices)[index]) * 100).toFixed(2) + "¢";
+              {market.outcomes.map((outcome: string, index: number) => {
+                const outcomePrice = (parseFloat(market.outcomePrices[index]) * 100).toFixed(2) + "¢";
                 return (
                   <button
                     key={`outcome-` + index}

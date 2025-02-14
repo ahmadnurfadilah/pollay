@@ -1,5 +1,6 @@
 "use client";
 
+import ThreeDotsLoading from "@/components/icon/three-dots-loading";
 import { useChat } from "ai/react";
 import { AnimatePresence, motion } from "motion/react";
 import { Spotlight } from "@/components/ui/spotlight-new";
@@ -9,7 +10,6 @@ import { ToolCall } from "@/components/ui/chat/tool-call";
 import { AskForConfirmation } from "@/components/ui/chat/ask-for-conifrmation";
 import { useEffect, useRef, useState } from "react";
 import { generateId } from "ai";
-import ThreeDotsLoading from "@/components/icon/three-dots-loading";
 import { Event } from "@/lib/tools/events";
 import { EventDetailMarket } from "@/components/ui/chat/event-detail-market";
 
@@ -112,10 +112,7 @@ export default function Home() {
                                   ></div>
 
                                   {partToolInvocation && partToolInvocation.state === "result" && partToolInvocation.toolName === "eventDetail" && (
-                                    <EventDetailMarket
-                                      markets={partToolInvocation.result.markets}
-                                      onOutcomeClicked={(msg) => addMessage("user", msg)}
-                                    />
+                                    <EventDetailMarket markets={partToolInvocation.result.markets} onOutcomeClicked={(msg) => addMessage("user", msg)} />
                                   )}
                                 </div>
                               </div>

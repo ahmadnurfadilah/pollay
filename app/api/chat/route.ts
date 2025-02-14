@@ -1,5 +1,6 @@
 import { eventDetail } from "@/lib/tools/event-detail";
 import { events } from "@/lib/tools/events";
+import { order } from "@/lib/tools/order";
 import { tags } from "@/lib/tools/tags";
 import { openai } from "@ai-sdk/openai";
 import { convertToCoreMessages, InvalidToolArgumentsError, NoSuchToolError, smoothStream, streamText, ToolExecutionError } from "ai";
@@ -26,19 +27,20 @@ export async function POST(req: Request) {
 
       Response format:
       - If a user asks about events, respond by simply listing event titles. Ask user to choose from available ones
-      - If a user asks about a specific event, respond by providing event details. Do not include available markets in the response`,
+      - If a user asks about a specific event, respond by providing event details. DO NOT INCLUDE AVAILABLE MARKETS in your response`,
     experimental_transform: smoothStream(),
-    maxSteps: 5,
+    maxSteps: 10,
     toolCallStreaming: true,
     tools: {
       tags,
       events,
       eventDetail,
+      order,
       // client-side tool that starts user interaction:
       askForConfirmation: {
-        description: 'Ask the user for confirmation if they want to excute a trade.',
+        description: "Ask the user for confirmation if they want to excute a trade.",
         parameters: z.object({
-          message: z.string().describe('The message to ask for confirmation.'),
+          message: z.string().describe("The message to ask for confirmation."),
         }),
       },
     },

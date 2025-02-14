@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { tool } from "ai";
 import { z } from "zod";
 
@@ -6,8 +7,9 @@ const Market = z.object({
   question: z.string(),
   groupItemTitle: z.string(),
   description: z.string(),
-  outcomes: z.string(),
-  outcomePrices: z.string(),
+  clobTokenIds: z.array(z.string()).describe("Binary token pair for market"),
+  outcomes: z.array(z.string()).describe("Binary outcomes for market"),
+  outcomePrices: z.array(z.string()).describe("Binary outcome prices for market"),
   liquidity: z.number(),
   volume: z.number(),
 });
@@ -27,8 +29,7 @@ export type Market = z.infer<typeof Market>;
 export type EventDetail = z.infer<typeof EventDetail>;
 
 export const eventDetail = tool({
-  description:
-    "Get event detail by event id. Do not include available markets in the response",
+  description: "Get event detail by event id. Do not include available markets in the response",
   parameters: z.object({
     id: z.number().describe("Event id"),
   }),
@@ -44,16 +45,19 @@ export const eventDetail = tool({
       endDate: event.endDate,
       liquidity: event.liquidity,
       volume: event.volume,
-      markets: event.markets.map((m: Market) => ({
-        id: m.id,
-        question: m.question,
-        groupItemTitle: m.groupItemTitle,
-        description: m.description,
-        outcomes: m.outcomes,
-        outcomePrices: m.outcomePrices,
-        liquidity: m.liquidity,
-        volume: m.volume,
-      })),
+      markets: event.markets.map(
+        (m: any): Market => ({
+          id: m.id,
+          question: m.question,
+          groupItemTitle: m.groupItemTitle,
+          description: m.description,
+          clobTokenIds: JSON.parse(m.clobTokenIds),
+          outcomes: JSON.parse(m.outcomes),
+          outcomePrices: JSON.parse(m.outcomePrices),
+          liquidity: m.liquidity,
+          volume: m.volume,
+        })
+      ),
     };
   },
 });
