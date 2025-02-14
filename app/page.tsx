@@ -13,13 +13,26 @@ import { generateId } from "ai";
 import { Event } from "@/lib/tools/events";
 import { EventDetailMarket } from "@/components/ui/chat/event-detail-market";
 import { useAccount, useBalance, useReadContract } from "wagmi";
+import { ClobClient } from "@polymarket/clob-client";
+import { ethers } from "ethers";
 import { abi } from "./abi";
+import { useCredsStore } from "@/lib/store";
+
+const getSigner = async () => {
+  const ethereum = window.ethereum as ethers.providers.ExternalProvider;
+  if (!ethereum) throw new Error("Ethereum provider not found");
+  const provider = new ethers.providers.Web3Provider(ethereum);
+  return provider.getSigner();
+};
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLInputElement>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [safeBalance, setSafeBalance] = useState<string>("0");
+
+  const creds = useCredsStore((state) => state.creds);
+  const setCreds = useCredsStore((state) => state.setCreds)
 
   const { address } = useAccount();
   const { data: safeAddress } = useReadContract({
@@ -53,6 +66,34 @@ export default function Home() {
       }, 300);
     },
   });
+
+  // Setup creds for ClobClient
+  useEffect(() => {
+    const checkApiKey = async () => {
+      const signer = await getSigner();
+      const clobClient = new ClobClient("https://clob.polymarket.com", 137, signer!);
+      const getCreds = await clobClient.deriveApiKey();
+      if (!getCreds) {
+        const createCreds = await clobClient.createApiKey();
+        setCreds({
+          key: createCreds.key,
+          secret: createCreds.secret,
+          passphrase: createCreds.passphrase,
+        });
+      } else {
+        setCreds({
+          key: getCreds.key,
+          secret: getCreds.secret,
+          passphrase: getCreds.passphrase,
+        });
+      }
+    };
+
+    if (address && creds === null) {
+      checkApiKey();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, creds]);
 
   // Set safe balance
   useEffect(() => {
