@@ -175,6 +175,15 @@ export default function Home() {
                               }
                               break;
                             }
+                            case "perplexity": {
+                              switch (part.toolInvocation.state) {
+                                case "call":
+                                  return <ToolCall key={key} state="loading" text="Analyzing data using perplexity..." />;
+                                case "result":
+                                  return <ToolCall key={key} state="result" text="Successfully analyzed data using perplexity." />;
+                              }
+                              break;
+                            }
                             case "askForConfirmation": {
                               switch (part.toolInvocation.state) {
                                 case "call":

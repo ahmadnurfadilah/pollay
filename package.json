@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.9",
+    "@ai-sdk/perplexity": "^1.0.0",
     "@phosphor-icons/react": "^2.1.7",
     "@polymarket/clob-client": "^4.15.0",
     "@radix-ui/react-slot": "^1.1.2",

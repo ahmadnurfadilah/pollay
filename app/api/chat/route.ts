@@ -1,6 +1,7 @@
 import { eventDetail } from "@/lib/tools/event-detail";
 import { events } from "@/lib/tools/events";
 import { order } from "@/lib/tools/order";
+import { perplexity } from "@/lib/tools/perplexity";
 import { tags } from "@/lib/tools/tags";
 import { openai } from "@ai-sdk/openai";
 import { convertToCoreMessages, InvalidToolArgumentsError, NoSuchToolError, smoothStream, streamText, ToolExecutionError } from "ai";
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
       events,
       eventDetail,
       order,
+      perplexity,
       // client-side tool that starts user interaction:
       askForConfirmation: {
         description: "Ask the user for confirmation if they want to excute a trade.",
