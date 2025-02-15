@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pollay
+
+Pollay is an AI-driven chatbot that transforms your prediction market experience. Engage in seamless, intuitive conversations to access real-time market insights and execute trades effortlessly. Whether you're a beginner or an expert, Pollay empowers you to predict, trade, and thrive with ease.
+
+## Features
+
+- **AI-Powered Trading**: Execute trades using simple commands.
+- **Event & Market Information**: List and provide details about events and markets.
+- **Real-Time Market Insights**: Get updates on market conditions, share prices, and trading volumes.
+- **Portfolio Management**: View and manage your portfolio, including current holdings, profitability, and diversification.
 
 ## Getting Started
 
-First, run the development server:
+### Installation
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1. Clone the repository:
+
+```sh
+git clone https://github.com/ahmadnurfadilah/pollay.git
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Navigate to the project directory:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+git pollay
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Install the dependencies:
 
-## Learn More
+```sh
+npm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Start the development server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```sh
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. Access the application at http://localhost:3000
 
-## Deploy on Vercel
+### ENV Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+You can set the following environment variables to configure the application:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `NEXT_PUBLIC_REOWN_PROJECT_ID`: Your Reown project ID.
+- `OPENAI_API_KEY`: Your OpenAI API key.
+- `PERPLEXITY_API_KEY`: Your Perplexity API key.
