@@ -20,6 +20,7 @@ import { abi } from "./abi";
 import { useCredsStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
+import { toast } from "sonner";
 
 const getSigner = async () => {
   const ethereum = window.ethereum as ethers.providers.ExternalProvider;
@@ -73,22 +74,31 @@ export default function Home() {
   // Setup creds for ClobClient
   useEffect(() => {
     const checkApiKey = async () => {
-      const signer = await getSigner();
-      const clobClient = new ClobClient("https://clob.polymarket.com", 137, signer!, undefined, SignatureType.POLY_GNOSIS_SAFE, safeAddress);
-      const getCreds = await clobClient.deriveApiKey();
-      if (!getCreds) {
-        const createCreds = await clobClient.createApiKey();
-        setCreds({
-          key: createCreds.key,
-          secret: createCreds.secret,
-          passphrase: createCreds.passphrase,
-        });
-      } else {
-        setCreds({
-          key: getCreds.key,
-          secret: getCreds.secret,
-          passphrase: getCreds.passphrase,
-        });
+      try {
+        const signer = await getSigner();
+        const clobClient = new ClobClient("https://clob.polymarket.com", 137, signer!, undefined, SignatureType.POLY_GNOSIS_SAFE, safeAddress);
+        const getCreds = await clobClient.deriveApiKey();
+        if (getCreds.key === undefined) {
+          const createCreds = await clobClient.createApiKey();
+          setCreds({
+            key: createCreds.key,
+            secret: createCreds.secret,
+            passphrase: createCreds.passphrase,
+          });
+        } else {
+          setCreds({
+            key: getCreds.key,
+            secret: getCreds.secret,
+            passphrase: getCreds.passphrase,
+          });
+        }
+      } catch (error) {
+        console.log("Error: ", error);
+
+        toast.error("Failed to sign request. Please try again.");
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       }
     };
 
