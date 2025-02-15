@@ -19,6 +19,7 @@ import { ethers } from "ethers";
 import { abi } from "./abi";
 import { useCredsStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
+import Logo from "@/components/ui/logo";
 
 const getSigner = async () => {
   const ethereum = window.ethereum as ethers.providers.ExternalProvider;
@@ -118,41 +119,49 @@ export default function Home() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    let intervalId;
-    if (isLoading) {
-      intervalId = setInterval(() => {
-        if (chatContainerRef.current) {
-          chatContainerRef.current.scrollTop += 20;
-        }
-      }, 100);
-    } else {
-      clearInterval(intervalId);
-    }
-  }, [isLoading]);
+  // useEffect(() => {
+  //   let intervalId;
+  //   if (isLoading) {
+  //     intervalId = setInterval(() => {
+  //       if (chatContainerRef.current) {
+  //         chatContainerRef.current.scrollTop += 20;
+  //       }
+  //     }, 100);
+  //   } else {
+  //     clearInterval(intervalId);
+  //   }
+  // }, [isLoading]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const executeOrder = async (callId: string, args: any) => {
-    const signer = await getSigner();
-    const clobClient = new ClobClient("https://clob.polymarket.com", 137, signer!, creds, SignatureType.POLY_GNOSIS_SAFE, safeAddress);
+    try {
+      const signer = await getSigner();
+      const clobClient = new ClobClient("https://clob.polymarket.com", 137, signer!, creds, SignatureType.POLY_GNOSIS_SAFE, safeAddress);
 
-    const order = await clobClient.createOrder({
-      tokenID: args.tokenID,
-      price: args.price / 100,
-      side: args.side === "buy" ? Side.BUY : Side.SELL,
-      size: args.size,
-    });
-
-    const resp = await clobClient.postOrder(order, OrderType.GTC);
-    if (resp.success) {
-      addToolResult({
-        toolCallId: callId,
-        result: "Order successfully placed. Order ID: " + resp.orderId,
+      const order = await clobClient.createOrder({
+        tokenID: args.tokenID,
+        price: args.price / 100,
+        side: args.side === "buy" ? Side.BUY : Side.SELL,
+        size: args.size,
       });
-    } else {
+
+      const resp = await clobClient.postOrder(order, OrderType.GTC);
+      if (resp.success) {
+        addToolResult({
+          toolCallId: callId,
+          result: "Order successfully placed. Order ID: " + resp.orderId,
+        });
+      } else {
+        addToolResult({
+          toolCallId: callId,
+          result: "Order failed. Error: " + resp.error,
+        });
+      }
+    } catch (error) {
+      console.log("Error: ", error);
       addToolResult({
         toolCallId: callId,
-        result: "Order failed. Error: " + resp.errorMsg,
+        result: "Order failed",
       });
     }
   };
@@ -174,10 +183,12 @@ export default function Home() {
   return (
     <div className="w-full h-screen">
       <nav className="w-full h-16 flex items-center justify-between fixed top-0 inset-x-0 z-50 bg-white/5 backdrop-blur-xl border-b border-gray-800 px-4">
-        <div>Pollay</div>
+        <div>
+          <Logo className="h-5" />
+        </div>
         <div>
           {/* @ts-expect-error msg */}
-          <appkit-button />
+          <appkit-button balance="hide" />
         </div>
       </nav>
 
@@ -296,12 +307,17 @@ export default function Home() {
                               switch (part.toolInvocation.state) {
                                 case "call":
                                   return (
-                                    <Button key={key + "-" + part.toolInvocation.toolName} onClick={() => executeOrder(callId, part.toolInvocation.args)}>
+                                    <Button
+                                      key={key + "-" + part.toolInvocation.toolName + "-call"}
+                                      onClick={() => executeOrder(callId, part.toolInvocation.args)}
+                                    >
                                       Execute Order
                                     </Button>
                                   );
                                 case "result":
-                                  return <ToolCall key={key} state="result" text={part.toolInvocation.result} />;
+                                  return (
+                                    <ToolCall key={key + "-" + part.toolInvocation.toolName + "-result"} state="result" text={part.toolInvocation.result} />
+                                  );
                               }
                             }
                             case "askForConfirmation": {
@@ -345,16 +361,27 @@ export default function Home() {
               transition={{ type: "spring", duration: 0.3 }}
               className="w-full h-full flex items-center justify-center"
             >
-              <div className="p-4 max-w-7xl  mx-auto relative z-10  w-full pt-20 md:pt-0">
-                <h1 className="text-4xl md:text-6xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-br from-neutral-50 to-neutral-400 bg-opacity-50 pb-2">
+              <div className="p-4 max-w-7xl  mx-auto relative z-10  w-full pt-20 md:pt-0 text-center">
+                <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-neutral-50 to-neutral-400 bg-opacity-50 pb-2">
                   Your AI-Powered
                   <br />
                   Trading Ally
                 </h1>
-                <p className="mt-4 font-normal text-base text-neutral-500 max-w-lg text-center mx-auto">
+                <p className="mt-4 font-normal text-base text-neutral-500 max-w-lg mx-auto">
                   Pollay is an AI-driven chatbot that transforms your prediction market experience. Engage in seamless, intuitive conversations to access
                   real-time market insights and execute trades effortlessly
                 </p>
+
+                {safeAddress && safeBalance && (
+                  <div className="mt-5">
+                    <p>
+                      Your Polymarket Proxy Address:{" "}
+                      <strong>
+                        {safeAddress.slice(0, 4)}...{safeAddress.slice(-6)}
+                      </strong>
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -387,12 +414,12 @@ export default function Home() {
                 className="rounded-full w-full bg-gray-900 px-4 py-3 text-sm placeholder:text-white/50 peer disabled:cursor-not-allowed disabled:text-white/30"
                 placeholder={address === undefined ? "Connect your wallet to start chatting..." : "Write a message..."}
                 value={input}
-                disabled={isLoading || address === undefined}
+                disabled={isLoading || safeAddress === undefined}
                 onChange={handleInputChange}
               />
               <button
                 className="absolute right-1 top-1 size-9 flex items-center justify-center rounded-full bg-white/20 text-white/50 peer-focus:text-white peer-focus:rotate-45 transition-all"
-                disabled={isLoading}
+                disabled={isLoading || safeAddress === undefined}
               >
                 {isLoading ? <Spinner size={16} className="animate-spin" /> : <PaperPlaneTilt size={16} />}
               </button>
