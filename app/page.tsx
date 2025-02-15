@@ -13,10 +13,12 @@ import { generateId } from "ai";
 import { Event } from "@/lib/tools/events";
 import { EventDetailMarket } from "@/components/ui/chat/event-detail-market";
 import { useAccount, useBalance, useReadContract } from "wagmi";
-import { ClobClient } from "@polymarket/clob-client";
+import { ClobClient, OrderType, Side } from "@polymarket/clob-client";
+import { SignatureType } from "@polymarket/order-utils";
 import { ethers } from "ethers";
 import { abi } from "./abi";
 import { useCredsStore } from "@/lib/store";
+import { Button } from "@/components/ui/button";
 
 const getSigner = async () => {
   const ethereum = window.ethereum as ethers.providers.ExternalProvider;
@@ -71,7 +73,7 @@ export default function Home() {
   useEffect(() => {
     const checkApiKey = async () => {
       const signer = await getSigner();
-      const clobClient = new ClobClient("https://clob.polymarket.com", 137, signer!);
+      const clobClient = new ClobClient("https://clob.polymarket.com", 137, signer!, undefined, SignatureType.POLY_GNOSIS_SAFE, safeAddress);
       const getCreds = await clobClient.deriveApiKey();
       if (!getCreds) {
         const createCreds = await clobClient.createApiKey();
@@ -89,11 +91,11 @@ export default function Home() {
       }
     };
 
-    if (address && creds === null) {
+    if (safeAddress && creds === undefined) {
       checkApiKey();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, creds]);
+  }, [safeAddress, creds]);
 
   // Set safe balance
   useEffect(() => {
@@ -117,14 +119,43 @@ export default function Home() {
   }, [messages]);
 
   useEffect(() => {
+    let intervalId;
     if (isLoading) {
-      setInterval(() => {
+      intervalId = setInterval(() => {
         if (chatContainerRef.current) {
           chatContainerRef.current.scrollTop += 20;
         }
       }, 100);
+    } else {
+      clearInterval(intervalId);
     }
   }, [isLoading]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const executeOrder = async (callId: string, args: any) => {
+    const signer = await getSigner();
+    const clobClient = new ClobClient("https://clob.polymarket.com", 137, signer!, creds, SignatureType.POLY_GNOSIS_SAFE, safeAddress);
+
+    const order = await clobClient.createOrder({
+      tokenID: args.tokenID,
+      price: args.price / 100,
+      side: args.side === "buy" ? Side.BUY : Side.SELL,
+      size: args.size,
+    });
+
+    const resp = await clobClient.postOrder(order, OrderType.GTC);
+    if (resp.success) {
+      addToolResult({
+        toolCallId: callId,
+        result: "Order successfully placed. Order ID: " + resp.orderId,
+      });
+    } else {
+      addToolResult({
+        toolCallId: callId,
+        result: "Order failed. Error: " + resp.errorMsg,
+      });
+    }
+  };
 
   const addMessage = (role: "system" | "user" | "assistant" | "data", message: string) => {
     append({
@@ -236,6 +267,18 @@ export default function Home() {
                                   return <ToolCall key={key} state="result" text="Successfully analyzed data using perplexity." />;
                               }
                               break;
+                            }
+                            case "order": {
+                              switch (part.toolInvocation.state) {
+                                case "call":
+                                  return (
+                                    <Button key={key + "-" + part.toolInvocation.toolName} onClick={() => executeOrder(callId, part.toolInvocation.args)}>
+                                      Execute Order
+                                    </Button>
+                                  );
+                                case "result":
+                                  return <ToolCall key={key} state="result" text={part.toolInvocation.result} />;
+                              }
                             }
                             case "askForConfirmation": {
                               switch (part.toolInvocation.state) {

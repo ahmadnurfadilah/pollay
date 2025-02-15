@@ -1,25 +1,17 @@
-import { z } from "zod";
+import { ApiKeyCreds } from "@polymarket/clob-client";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
-const Creds = z.object({
-  key: z.string(),
-  secret: z.string(),
-  passphrase: z.string(),
-});
-
-type Creds = z.infer<typeof Creds>;
-
 interface CredsState {
-  creds: Creds | null;
-  setCreds: (creds: Creds) => void;
+  creds: ApiKeyCreds | undefined;
+  setCreds: (creds: ApiKeyCreds) => void;
 }
 
 export const useCredsStore = create<CredsState>()(
   devtools(
     persist(
       (set) => ({
-        creds: null,
+        creds: undefined,
         setCreds: (creds) => set({ creds }),
       }),
       {
