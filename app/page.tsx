@@ -149,7 +149,7 @@ export default function Home() {
       if (resp.success) {
         addToolResult({
           toolCallId: callId,
-          result: "Order successfully placed. Order ID: " + resp.orderId,
+          result: "Order successfully placed",
         });
       } else {
         addToolResult({
@@ -318,6 +318,14 @@ export default function Home() {
                                   return (
                                     <ToolCall key={key + "-" + part.toolInvocation.toolName + "-result"} state="result" text={part.toolInvocation.result} />
                                   );
+                              }
+                            }
+                            case "portfolio": {
+                              switch (part.toolInvocation.state) {
+                                case "call":
+                                  return <ToolCall key={key} state="loading" text="Getting portfolio details from Polymarket..." />;
+                                case "result":
+                                  return <ToolCall key={key} state="failed" text="Failed to fetched portfolio details." />;
                               }
                             }
                             case "askForConfirmation": {

@@ -2,6 +2,7 @@ import { eventDetail } from "@/lib/tools/event-detail";
 import { events } from "@/lib/tools/events";
 import { cancelAllOrder, cancelOrder, order, placeOrder } from "@/lib/tools/order";
 import { perplexity } from "@/lib/tools/perplexity";
+import { portfolio } from "@/lib/tools/portfolio";
 import { tags } from "@/lib/tools/tags";
 import { openai } from "@ai-sdk/openai";
 import { convertToCoreMessages, InvalidToolArgumentsError, NoSuchToolError, smoothStream, streamText, ToolExecutionError } from "ai";
@@ -22,15 +23,14 @@ export async function POST(req: Request) {
 
       Your Wallet:
       - Address: ${safeAddress}
-      - Balance: ${safeBalance} USDC
+      - Balance: $${safeBalance}
 
 			You can do:
 			- Trade Execution: Allow users to buy or sell shares in prediction markets using simple commands (e.g., "Buy 10 shares of [Outcome] on [Market]"
 			- Market Insights and Analytics: Provide real-time updates on market conditions, share prices, and trading volumes.
 			- Portfolio Management: Enable users to view and manage their portfolio, including current holdings, profitability, and diversification.
-			- Educational Resources: Offer built-in tutorials, FAQs, and tips to assist users in navigating prediction markets and optimizing their trading strategies.
 
-      Response format:
+      RULES:
       - If a user asks about events, respond by simply listing event titles. Ask user to choose from available ones
       - If a user asks about a specific event, respond by providing event details. DO NOT INCLUDE AVAILABLE MARKETS in your response`,
     experimental_transform: smoothStream(),
@@ -45,6 +45,7 @@ export async function POST(req: Request) {
       cancelOrder,
       cancelAllOrder,
       perplexity,
+      portfolio,
       // client-side tool that starts user interaction:
       askForConfirmation: {
         description: "Ask the user for confirmation if they want to excute a trade.",
