@@ -271,6 +271,30 @@ export default function Home() {
                             case "order": {
                               switch (part.toolInvocation.state) {
                                 case "call":
+                                  return <ToolCall key={key} state="loading" text="Getting order details from Polymarket..." />;
+                                case "result":
+                                  return <ToolCall key={key} state="failed" text="Failed to fetched order details." />;
+                              }
+                            }
+                            case "cancelOrder": {
+                              switch (part.toolInvocation.state) {
+                                case "call":
+                                  return <ToolCall key={key} state="loading" text="Cancelling order from Polymarket..." />;
+                                case "result":
+                                  return <ToolCall key={key} state="failed" text="Failed to cancel order." />;
+                              }
+                            }
+                            case "cancelAllOrder": {
+                              switch (part.toolInvocation.state) {
+                                case "call":
+                                  return <ToolCall key={key} state="loading" text="Cancelling all orders from Polymarket..." />;
+                                case "result":
+                                  return <ToolCall key={key} state="failed" text="Failed to cancel all orders." />;
+                              }
+                            }
+                            case "placeOrder": {
+                              switch (part.toolInvocation.state) {
+                                case "call":
                                   return (
                                     <Button key={key + "-" + part.toolInvocation.toolName} onClick={() => executeOrder(callId, part.toolInvocation.args)}>
                                       Execute Order

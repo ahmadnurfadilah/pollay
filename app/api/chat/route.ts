@@ -1,6 +1,6 @@
 import { eventDetail } from "@/lib/tools/event-detail";
 import { events } from "@/lib/tools/events";
-import { order } from "@/lib/tools/order";
+import { cancelAllOrder, cancelOrder, order, placeOrder } from "@/lib/tools/order";
 import { perplexity } from "@/lib/tools/perplexity";
 import { tags } from "@/lib/tools/tags";
 import { openai } from "@ai-sdk/openai";
@@ -41,6 +41,9 @@ export async function POST(req: Request) {
       events,
       eventDetail,
       order,
+      placeOrder,
+      cancelOrder,
+      cancelAllOrder,
       perplexity,
       // client-side tool that starts user interaction:
       askForConfirmation: {
